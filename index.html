@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pembuat Faktur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f4;--bar:#ffffff;--bar-text:#111827;--line:#d9dde5;--ink:#111827;--muted:#5b6472;--navy:#0f172a;--green:#0f9d6b;--red:#c62828;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--bar:#1e232b;--bar-text:#e8eaee;--line:#d9dde5}}
+:root[data-theme="dark"]{--bg:#14171c;--bar:#1e232b;--bar-text:#e8eaee}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);font-size:14px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);color:var(--bar-text);display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid #8884}
+.bar b{font-weight:800}
+.bar .act{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid #8886;background:transparent;color:inherit;border-radius:8px;padding:8px 14px;font-weight:500}
+.btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+@media (prefers-color-scheme:dark){.btn.pri{background:#3b82f6;border-color:#3b82f6}}
+:focus-visible{outline:2px solid #3b82f6;outline-offset:2px}
+.sheet{max-width:880px;margin:24px auto;background:#fff;color:var(--ink);padding:40px;border-radius:6px;box-shadow:0 1px 3px #0003}
+input,textarea{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+input.r{text-align:right}
+label.l{display:block;color:var(--muted);margin-bottom:6px}
+.head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
+.logo{width:150px;height:110px;border:1px dashed #b8bfcc;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;cursor:pointer;overflow:hidden;position:relative;font-size:13px;flex:none}
+.logo img{max-width:100%;max-height:100%;object-fit:contain}
+.logo .x{position:absolute;top:4px;left:4px;background:#222;color:#fff;border:0;border-radius:4px;width:22px;height:22px;line-height:1;display:none}
+.logo.has .x{display:block}
+.title{text-align:right;flex:1}
+.title input.big{font-size:34px;font-weight:800;text-align:right;border-color:transparent;padding:4px 0}
+.title input.big:hover,.title input.big:focus{border-color:var(--line);padding:4px 10px}
+.num{display:flex;align-items:center;gap:6px;width:150px;margin-left:auto}
+.row2{display:grid;grid-template-columns:1fr 340px;gap:32px;margin-top:28px}
+.stack>div{margin-bottom:16px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.meta{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center}
+.meta span{color:var(--muted)}
+.hint{color:var(--red);font-size:12px;margin-top:4px;display:none}
+.bad{border-color:var(--red)}
+.bad + .hint{display:block}
+.tbl{margin-top:26px;overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:560px}
+th{background:var(--navy);color:#fff;text-align:left;padding:10px 12px;font-weight:700}
+th:first-child{border-radius:8px 0 0 8px}th:last-child{border-radius:0 8px 8px 0}
+th.n,td.n{text-align:right}
+td{padding:0 6px 0 0;vertical-align:middle}
+td.amt{font-weight:700;white-space:nowrap;padding:0 8px;text-align:right}
+td.del{width:34px}
+.del button{border:0;background:transparent;color:var(--red);font-size:18px}
+.add{display:block;width:100%;margin-top:4px;padding:10px;border:0;border-radius:8px;background:#f1f3f7;color:#26303f;font-weight:500}
+.bottom{display:grid;grid-template-columns:1fr 340px;gap:32px;margin-top:26px}
+.sum .line{display:flex;justify-content:space-between;align-items:center;padding:6px 0;gap:10px}
+.sum .line input{width:130px}
+.sum .adds{display:flex;gap:16px;margin:8px 0 12px}
+.sum .adds button{border:0;background:none;color:var(--green);font-weight:500;padding:0}
+.sum .tot{border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+.sum .tot b{font-size:15px}
+.sum .due{border-top:1px solid var(--line);margin-top:14px;padding-top:16px;font-size:18px;font-weight:800}
+.mini{display:flex;gap:6px;align-items:center}
+.mini input{width:90px}
+.hide{display:none!important}
+.bar{flex-wrap:wrap}
+.panel{max-width:1000px;margin:24px auto;padding:0 20px;color:var(--bar-text)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.card{background:var(--bar);border:1px solid #8884;border-radius:12px;padding:16px}
+.card small{display:block;opacity:.7;margin-bottom:6px}
+.card b{font-size:22px;font-weight:800}
+.tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tools input{flex:1;min-width:180px;width:auto}
+.panel select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:#fff;color:#111827}
+.pbox{background:var(--bar);border:1px solid #8884;border-radius:12px;overflow-x:auto}
+.pt{border-spacing:0;min-width:760px}
+.pt th{background:none;color:inherit;opacity:.7;font-weight:500;padding:12px 10px;border-radius:0!important}
+.pt td{padding:12px 10px;border-top:1px solid #8883}
+.pt td.n,.pt th.n{text-align:right}
+.pt .emp{text-align:center;opacity:.7;padding:32px}
+.pt .btn{padding:5px 10px;margin-left:4px}
+.bg{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.b-l{background:#0f9d6b26;color:#0f9d6b}.b-d{background:#d9770626;color:#d27208}.b-b{background:#c6282826;color:#d93a3a}
+@media (max-width:760px){.cards{grid-template-columns:1fr 1fr}}
+.tabs{display:flex;background:#8882;border-radius:10px;padding:3px}
+.tabs button{border:0;background:transparent;color:inherit;padding:7px 16px;border-radius:8px;font-weight:500}
+.tabs button.on{background:var(--navy);color:#fff}
+@media (prefers-color-scheme:dark){.tabs button.on{background:#3b82f6}}
+.stamp{margin:18px auto 0;text-align:center;border:3px solid var(--green);color:var(--green);font-weight:800;font-size:26px;letter-spacing:.1em;padding:6px;border-radius:10px;transform:rotate(-6deg);width:170px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@media (max-width:760px){.sheet{padding:20px;margin:0;border-radius:0}.row2,.bottom{grid-template-columns:1fr}.head{flex-direction:column}.title{width:100%}.title input.big{font-size:26px}.pair{grid-template-columns:1fr}}
+@media print{
+body{background:#fff}.bar,.add,.del,.sum .adds,.logo .x,.noprint{display:none!important}
+.sheet{box-shadow:none;margin:0;padding:0;max-width:none}
+input,textarea{border-color:transparent!important;padding-left:0;resize:none;overflow:hidden}
+.logo{border-color:transparent}.logo:not(.has){display:none}
+th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hint{display:none!important}
+}
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.lbox{background:var(--bar);color:var(--bar-text);border:1px solid #8884;border-radius:14px;padding:28px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+.lbox h1{font-size:20px;margin:0 0 4px;font-weight:800}
+.lbox .err{color:#e5484d;font-size:13px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <div class="lbox">
+    <h1>Masuk ke Pembuat Faktur</h1>
+    <input id="lEmail" type="email" placeholder="Email" autocomplete="username" aria-label="Email">
+    <input id="lPass" type="password" placeholder="Kata sandi" autocomplete="current-password" aria-label="Kata sandi">
+    <div class="err" id="lErr"></div>
+    <button class="btn pri" id="lBtn">Masuk</button>
+  </div>
+</div>
+<div class="bar">
+  <b>Pembuat Faktur</b>
+  <div class="tabs" role="group" aria-label="Jenis dokumen"><button id="tInv" class="on">Invoice</button><button id="tLunas">Pelunasan</button><button id="tHist">Riwayat</button></div>
+  <div class="act">
+    <button class='btn' id='save'>Simpan</button>
+    <button class="btn" id="reset">Faktur baru</button>
+    <button class="btn pri" id="print">Cetak / simpan PDF</button>
+    <button class="btn" id="logout">Keluar</button>
+  </div>
+</div>
+
+<main class="sheet" id="sheet">
+  <div class="head">
+    <div class="logo" id="logo" title="Unggah logo" tabindex="0"><button class="x" id="logoX" aria-label="Hapus logo">×</button><span id="logoPh">Unggah logo</span></div>
+    <div class="title">
+      <input class="big" id="judul" value="FAKTUR INVOICE" aria-label="Judul faktur">
+      <div class="num"><span style="color:var(--muted)">#</span><input class="r" id="nomor" value="1" aria-label="Nomor faktur"></div>
+    </div>
+  </div>
+  <input type="file" id="file" accept="image/*" class="hide">
+
+  <div class="row2">
+    <div class="stack">
+      <div><textarea id="pengirim" style="min-height:64px">ARVIX Production</textarea></div>
+      <div class="pair">
+        <div><label class="l" for="klien">Tagihan kepada</label><textarea id="klien" placeholder="Kepada siapa ini?"></textarea><div class="hint">Masukkan detail klien Anda di kolom "Tagihan kepada".</div></div>
+        <div><label class="l" for="kirim">Dikirim ke</label><textarea id="kirim" placeholder="(opsional)"></textarea></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="meta"><span>Tanggal</span><input type="date" id="tgl"></div>
+      <div class="meta"><span id="lSyarat">Syarat pembayaran</span><input id="syarat" placeholder="mis. DP 50%"></div>
+      <div class="meta"><span id="lTempo">Jatuh tempo</span><input type="date" id="tempo"></div>
+      <div class="meta"><span>Nomor PO</span><input id="po" class="r" value="DI0001"></div>
+    </div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Item</th><th class="n" style="width:90px">Kuantitas</th><th class="n" style="width:150px">Harga</th><th class="n" style="width:140px">Jumlah</th><th class="noprint" style="width:34px;background:none"></th></tr></thead>
+      <tbody id="items"></tbody>
+    </table>
+    <button class="add" id="addItem">+ Item baris</button>
+  </div>
+
+  <div class="bottom">
+    <div class="stack">
+      <div><label class="l" for="catatan">Catatan</label><textarea id="catatan" style="min-height:150px">Transfer :
+BCA   054 154 2816 a.n Wildan Azril Arvany
+
+- Fiksasi Booking dilakukan dengan pembayaran Uang Muka ( Down Payment ) sebesar Rp. 250.000
+- Mohon konfirmasi pembayaran melalui Whatsapp ( 0898 1179 514 )</textarea></div>
+      <div><label class="l" for="ketentuan">Ketentuan</label><textarea id="ketentuan" style="min-height:120px">1. Pelunasan dibayarkan selambat-lambatnya H-3 acara.
+2. Denda keterlambatan pelunasan 10% dari sisa tagihan.
+3. DP tidak dapat dikembalikan.
+4. Klien/Vendor memastikan venue mengizinkan penggunaan efek.</textarea></div>
+    </div>
+    <div class="sum">
+      <div class="line"><span style="color:var(--muted)">Subtotal</span><b id="sub"></b></div>
+      <div class="line hide" id="rDisk"><span>Diskon</span><span class="mini"><input class="r" type="number" min="0" id="disk" value="0"><select id="diskT"><option value="rp">Rp</option><option value="pct">%</option></select><button class="del-x" data-hide="rDisk" aria-label="Hapus diskon" style="border:0;background:none;color:var(--red);font-size:18px">×</button></span></div>
+      <div class="line hide" id="rPajak"><span>Pajak (%)</span><span class="mini"><input class="r" type="number" min="0" step="0.1" id="pajak" value="11"><button data-hide="rPajak" aria-label="Hapus pajak" style="border:0;background:none;color:var(--red);font-size:18px">×</button></span></div>
+      <div class="line hide" id="rKirim"><span>Pengiriman</span><span class="mini"><input class="r" type="number" min="0" id="ongkir" value="0"><button data-hide="rKirim" aria-label="Hapus pengiriman" style="border:0;background:none;color:var(--red);font-size:18px">×</button></span></div>
+      <div class="adds">
+        <button data-show="rDisk" id="aD">+ Diskon</button><button data-show="rPajak" id="aP">+ Pajak</button><button data-show="rKirim" id="aK">+ Pengiriman</button>
+      </div>
+      <div class="line tot"><b>Total</b><b id="total"></b></div>
+      <div class="line"><span id="lBayar" style="color:var(--muted)">Jumlah yang dibayarkan</span><input class="r" type="number" min="0" id="bayar" value="0"></div>
+      <div class="line hide" id="rLunas"><span style="color:var(--muted)">Pelunasan diterima</span><input class="r" type="number" min="0" id="lunas" value="0"></div>
+      <div class="line due"><span>Sisa Tagihan</span><span id="sisa"></span></div>
+      <div class="stamp hide" id="stamp">LUNAS</div>
+    </div>
+  </div>
+</main>
+
+<section class='panel hide' id='panel'>
+  <div class='cards'>
+    <div class='card'><small>Total dokumen</small><b id='stDok'>0</b></div>
+    <div class='card'><small>Total nilai faktur</small><b id='stTot'>Rp 0</b></div>
+    <div class='card'><small>Belum lunas</small><b id='stOpen'>0</b></div>
+    <div class='card'><small>Sisa tagihan</small><b id='stDue'>Rp 0</b></div>
+  </div>
+  <div class='tools'>
+    <input id='q' placeholder='Cari klien atau nomor invoice' aria-label='Cari'>
+    <select id='fs' aria-label='Filter status'><option value=''>Semua status</option><option>Belum bayar</option><option>DP dibayar</option><option>Lunas</option></select>
+    <button class='btn pri' id='hNew'>+ Faktur baru</button>
+  </div>
+  <div class='pbox'><table class='pt'>
+    <thead><tr><th>No. invoice</th><th>Klien</th><th>Tanggal</th><th class='n'>Total</th><th class='n'>Dibayar</th><th class='n'>Sisa</th><th>Status</th><th class='n'>Aksi</th></tr></thead>
+    <tbody id='hbody'></tbody>
+  </table></div>
+</section>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var KEY="faktur-draft-v1";
+  var fmt=function(n){return "Rp "+new Intl.NumberFormat("id-ID",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0)};
+  var iso=function(d){return d.toISOString().slice(0,10)};
+  var fields=["pengirim","klien","kirim","po","disk","diskT","pajak","ongkir","bayar","lunas"];
+  var mfields=["judul","nomor","tgl","syarat","tempo","catatan","ketentuan"];
+  var mode="inv",store={inv:{},lun:{}},lastTot=0;
+  var MD={lun:{judul:"BUKTI PELUNASAN",nomor:"1",syarat:"",catatan:"Terima kasih, pembayaran Anda telah kami terima dan pesanan dinyatakan LUNAS.\n\nTransfer :\nBCA   054 154 2816 a.n Wildan Azril Arvany\nKonfirmasi via Whatsapp ( 0898 1179 514 )",ketentuan:"1. Dokumen ini adalah bukti pelunasan atas invoice yang tertera pada Ref. invoice.\n2. DP dan pelunasan yang sudah dibayarkan tidak dapat dikembalikan.\n3. Layanan dan jadwal mengikuti kesepakatan pada invoice."}};
+  function snap(){mfields.forEach(function(f){store[mode][f]=$(f).value})}
+  var HKEY='faktur-history-v1',curId=null,INV0={};
+  var HC=[];function hist(){return HC}
+  window.setHist=function(a){HC=a;if(!$('panel').classList.contains('hide'))render()};
+  function money(n){return 'Rp '+new Intl.NumberFormat('id-ID').format(n||0)}
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function saveRec(){
+    var k=$('klien');
+    if(!k.value.trim()){k.dataset.touched='1';k.classList.add('bad');k.focus();return}
+    calc();var s=state();delete s.logo;
+    var paid=(+s.bayar||0)+(mode==='lun'?(+s.lunas||0):0),sisa=lastTot-paid;
+    var st=lastTot>0&&sisa<=0?'Lunas':paid>0?'DP dibayar':'Belum bayar';
+    var a=hist(),r={id:curId||('r'+Date.now()),nomor:s.store.inv.nomor||'',klien:k.value.trim().split('\n')[0],tgl:s.store.inv.tgl||'',total:lastTot,paid:paid,sisa:sisa,status:st,s:s};
+    var i=a.map(function(x){return x.id}).indexOf(r.id);
+    if(i>=0)a[i]=r;else a.unshift(r);
+    curId=r.id;DB.put(r).catch(function(e){alert('Gagal menyimpan: '+e.message)});
+    var b=$('save');b.textContent='Tersimpan ✓';setTimeout(function(){b.textContent='Simpan'},1500);
+  }
+  function applyState(s){
+    fields.forEach(function(f){if(s[f]!=null)$(f).value=s[f]});
+    if(s.store)store=s.store;
+    $('items').innerHTML='';(s.rows&&s.rows.length?s.rows:[{name:'',qty:1,price:0}]).forEach(addRow);
+    if(s.vis)Object.keys(s.vis).forEach(function(k){$(k).classList.toggle('hide',!s.vis[k])});
+    syncAdds();setMode(s.mode||'inv',true);calc();save();
+  }
+  function render(){
+    var a=hist(),q=$('q').value.toLowerCase(),f=$('fs').value,tot=0,due=0,open=0;
+    a.forEach(function(r){tot+=r.total;if(r.status!=='Lunas'){due+=Math.max(0,r.sisa);open++}});
+    $('stDok').textContent=a.length;$('stTot').textContent=money(tot);$('stOpen').textContent=open;$('stDue').textContent=money(due);
+    var rows=a.filter(function(r){return(!f||r.status===f)&&(!q||(r.klien+' '+r.nomor).toLowerCase().indexOf(q)>=0)});
+    var cls={'Lunas':'b-l','DP dibayar':'b-d','Belum bayar':'b-b'};
+    $('hbody').innerHTML=rows.length?rows.map(function(r){
+      var d=r.tgl?new Date(r.tgl+'T00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';
+      return '<tr><td>#'+esc(r.nomor)+'</td><td>'+esc(r.klien)+'</td><td>'+d+'</td><td class="n">'+money(r.total)+'</td><td class="n">'+money(r.paid)+'</td><td class="n">'+money(Math.max(0,r.sisa))+'</td><td><span class="bg '+cls[r.status]+'">'+r.status+'</span></td><td class="n"><button class="btn" data-act="open" data-id="'+r.id+'">Buka</button><button class="btn" data-act="del" data-id="'+r.id+'">Hapus</button></td></tr>';
+    }).join(''):'<tr><td colspan="8" class="emp">'+(a.length?'Tidak ada hasil yang cocok.':'Belum ada riwayat. Isi faktur lalu klik Simpan.')+'</td></tr>';
+  }
+  function view(v){
+    var h=v==='hist';
+    $('sheet').classList.toggle('hide',h);$('panel').classList.toggle('hide',!h);
+    ['reset','print','save'].forEach(function(i){$(i).classList.toggle('hide',h)});
+    $('tHist').classList.toggle('on',h);
+    $('tInv').classList.toggle('on',!h&&mode==='inv');$('tLunas').classList.toggle('on',!h&&mode==='lun');
+    if(h)render();
+  }
+  function setMode(m,skip){
+    if(!skip)snap();
+    mode=m;var v=store[m]||{},L=m==="lun";
+    mfields.forEach(function(f){if(v[f]!=null)$(f).value=v[f]});
+    $("tInv").classList.toggle("on",!L);$("tLunas").classList.toggle("on",L);
+    $("lSyarat").textContent=L?"Ref. invoice":"Syarat pembayaran";
+    $("lTempo").textContent=L?"Tanggal lunas":"Jatuh tempo";
+    $("lBayar").textContent=L?"DP yang sudah dibayar":"Jumlah yang dibayarkan";
+    $("rLunas").classList.toggle("hide",!L);
+    if(!skip&&L&&!(+$("lunas").value)){calc();$("lunas").value=Math.max(0,lastTot-(+$("bayar").value||0))}
+    if(!skip&&L&&!$("syarat").value)$("syarat").value="Invoice #"+(store.inv.nomor||"");
+  }
+  var logoData="";
+
+  function addRow(d){
+    d=d||{name:"",qty:1,price:0};
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td><input class="nm" placeholder="Nama item / deskripsi"></td><td><input class="r qt" type="number" min="0" step="any"></td><td><input class="r pr" type="number" min="0" step="any"></td><td class="amt">Rp 0,00</td><td class="del"><button aria-label="Hapus baris">×</button></td>';
+    tr.querySelector(".nm").value=d.name;tr.querySelector(".qt").value=d.qty;tr.querySelector(".pr").value=d.price;
+    tr.querySelector("button").onclick=function(){tr.remove();calc();save()};
+    $("items").appendChild(tr);
+  }
+  function rows(){return Array.prototype.map.call($("items").children,function(tr){return{name:tr.querySelector(".nm").value,qty:+tr.querySelector(".qt").value||0,price:+tr.querySelector(".pr").value||0}})}
+
+  function calc(){
+    var sub=0;
+    Array.prototype.forEach.call($("items").children,function(tr){
+      var a=(+tr.querySelector(".qt").value||0)*(+tr.querySelector(".pr").value||0);
+      tr.querySelector(".amt").textContent=fmt(a);sub+=a;
+    });
+    var dv=+$("disk").value||0, d=$("rDisk").classList.contains("hide")?0:($("diskT").value==="pct"?sub*dv/100:dv);
+    d=Math.min(d,sub);
+    var base=sub-d;
+    var p=$("rPajak").classList.contains("hide")?0:base*(+$("pajak").value||0)/100;
+    var s=$("rKirim").classList.contains("hide")?0:(+$("ongkir").value||0);
+    var tot=base+p+s;lastTot=tot;
+    $("sub").textContent=fmt(sub);$("total").textContent=fmt(tot);var ln=mode==="lun"?(+$("lunas").value||0):0,sisa=tot-(+$("bayar").value||0)-ln;
+    $("sisa").textContent=fmt(sisa);$("stamp").classList.toggle("hide",!(mode==="lun"&&tot>0&&sisa<=0));
+  }
+
+  function state(){
+    var s={rows:rows(),logo:logoData,vis:{rDisk:!$("rDisk").classList.contains("hide"),rPajak:!$("rPajak").classList.contains("hide"),rKirim:!$("rKirim").classList.contains("hide")}};
+    snap();s.mode=mode;s.store=store;fields.forEach(function(f){s[f]=$(f).value});return s;
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state()))}catch(e){}}
+  function setLogo(src){
+    logoData=src||"";var box=$("logo");
+    var old=box.querySelector("img");if(old)old.remove();
+    if(logoData){var im=new Image();im.src=logoData;im.alt="Logo";box.insertBefore(im,box.firstChild);box.classList.add("has");$("logoPh").classList.add("hide")}
+    else{box.classList.remove("has");$("logoPh").classList.remove("hide")}
+  }
+  function defaults(){
+    var t=new Date(),e=new Date(t.getTime()+2*864e5);
+    $("tgl").value=iso(t);$("tempo").value=iso(e);
+    $("items").innerHTML="";addRow({name:"Wedding ( Dry Ice + Transport )",qty:1,price:1300000});
+  }
+  function load(){
+    defaults();snap();
+    INV0=Object.assign({},store.inv);var t=$("tgl").value;store.lun=Object.assign({},MD.lun,{tgl:t,tempo:t});
+    var s={};
+    try{
+      var raw=localStorage.getItem(KEY);if(raw)s=JSON.parse(raw);
+      fields.forEach(function(f){if(s[f]!=null)$(f).value=s[f]});
+      if(s.store)store=s.store;
+      mode=s.mode||"inv";
+      if(s.rows&&s.rows.length){$("items").innerHTML="";s.rows.forEach(addRow)}
+      if(s.vis)Object.keys(s.vis).forEach(function(k){$(k).classList.toggle("hide",!s.vis[k])});
+      setLogo(s.logo);
+    }catch(e){}
+  }
+  function syncAdds(){
+    [["rDisk","aD"],["rPajak","aP"],["rKirim","aK"]].forEach(function(p){$(p[1]).classList.toggle("hide",!$(p[0]).classList.contains("hide"))});
+  }
+
+  document.addEventListener("input",function(e){
+    if(e.target.id==="klien")e.target.classList.toggle("bad",!e.target.value.trim()&&e.target.dataset.touched==="1");
+    calc();save();
+  });
+  $("klien").addEventListener("blur",function(){this.dataset.touched="1";this.classList.toggle("bad",!this.value.trim())});
+  document.querySelectorAll("[data-show]").forEach(function(b){b.onclick=function(){$(b.dataset.show).classList.remove("hide");syncAdds();calc();save()}});
+  document.querySelectorAll("[data-hide]").forEach(function(b){b.onclick=function(){$(b.dataset.hide).classList.add("hide");syncAdds();calc();save()}});
+  $("addItem").onclick=function(){addRow();save()};
+  $("logo").onclick=function(e){if(e.target.id!=="logoX")$("file").click()};
+  $("logo").onkeydown=function(e){if(e.key==="Enter")$("file").click()};
+  $("logoX").onclick=function(e){e.stopPropagation();setLogo("");save()};
+  $("file").onchange=function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();r.onload=function(){setLogo(r.result);save()};r.readAsDataURL(f);
+  };
+  $("print").onclick=function(){
+    var k=$("klien");k.dataset.touched="1";k.classList.toggle("bad",!k.value.trim());
+    if(!k.value.trim()){k.focus();return}
+    window.print();
+  };
+  $("reset").onclick=function(){
+    if(!confirm("Mulai faktur baru? Isian saat ini akan dihapus."))return;
+    try{localStorage.removeItem(KEY)}catch(e){}
+    ["klien","kirim"].forEach(function(f){$(f).value=""});snap();
+    var n=Math.max.apply(null,[parseInt(store.inv.nomor,10)||0].concat(hist().map(function(r){return parseInt(r.nomor,10)||0})))+1;
+    $("bayar").value=0;$("lunas").value=0;curId=null;defaults();
+    var t=$("tgl").value,e=$("tempo").value;
+    store.inv=Object.assign({},INV0,{nomor:String(n),tgl:t,tempo:e});
+    store.lun=Object.assign({},MD.lun,{nomor:String(n),tgl:t,tempo:t,syarat:"Invoice #"+n});
+    setMode("inv",true);setLogo(logoData);syncAdds();calc();save();view("edit");
+  };
+
+  $("tInv").onclick=function(){setMode("inv");calc();save();view("edit")};
+  $("tLunas").onclick=function(){setMode("lun");calc();save();view("edit")};
+  $("tHist").onclick=function(){snap();save();view("hist")};
+  $("save").onclick=saveRec;
+  $("hNew").onclick=function(){view("edit");$("reset").click()};
+  $("q").addEventListener("input",render);$("fs").onchange=render;
+  $("hbody").onclick=function(e){
+    var b=e.target.closest("button");if(!b)return;
+    var id=b.dataset.id,a=hist();
+    if(b.dataset.act==="open"){var r=a.filter(function(x){return x.id===id})[0];if(r){applyState(r.s);curId=id;view("edit")}}
+    else if(b.dataset.act==="del"&&confirm("Hapus dokumen ini dari riwayat?")){DB.del(id).catch(function(e){alert('Gagal menghapus: '+e.message)});HC=a.filter(function(x){return x.id!==id});if(curId===id)curId=null;render()}
+  };
+  load();syncAdds();setMode(mode,true);calc();
+})();
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+/* Konfigurasi Firebase: proyek Faktur - Arvix Production */
+const firebaseConfig={
+  apiKey:"AIzaSyAJATanl645fZulmvejEtw9OchrPvYhFSE",
+  authDomain:"faktur---arvix-production.firebaseapp.com",
+  projectId:"faktur---arvix-production",
+  storageBucket:"faktur---arvix-production.firebasestorage.app",
+  messagingSenderId:"275917248161",
+  appId:"1:275917248161:web:24fb4ad453cb6a6365c2e0"
+};
+
+const $=id=>document.getElementById(id);
+let auth,db,uid=null,unsub=null;
+window.DB={
+  put:r=>{if(!uid)return Promise.reject(new Error("Belum login"));r.upd=Date.now();return setDoc(doc(db,"users",uid,"invoices",r.id),JSON.parse(JSON.stringify(r)))},
+  del:id=>{if(!uid)return Promise.reject(new Error("Belum login"));return deleteDoc(doc(db,"users",uid,"invoices",id))}
+};
+function migrate(a){
+  if(a.length)return;
+  try{const old=JSON.parse(localStorage.getItem("faktur-history-v1")||"[]");
+    old.forEach(r=>window.DB.put(r));
+    if(old.length)localStorage.removeItem("faktur-history-v1")}catch(e){}
+}
+if(firebaseConfig.apiKey.startsWith("ISI")){
+  $("lErr").textContent="Firebase belum dikonfigurasi. Isi firebaseConfig di index.html (lihat PANDUAN.md).";
+  $("lBtn").disabled=true;
+}else{
+  const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);
+  const doLogin=()=>{
+    $("lErr").textContent="";
+    signInWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lPass").value)
+      .catch(()=>{$("lErr").textContent="Email atau kata sandi salah."});
+  };
+  $("lBtn").onclick=doLogin;
+  $("lPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("logout").onclick=async()=>{await signOut(auth);try{localStorage.removeItem("faktur-draft-v1")}catch(e){}location.reload()};
+  onAuthStateChanged(auth,u=>{
+    if(unsub){unsub();unsub=null}
+    if(!u){uid=null;$("login").classList.remove("hide");window.setHist([]);return}
+    uid=u.uid;$("login").classList.add("hide");$("lPass").value="";
+    let first=true;
+    unsub=onSnapshot(collection(db,"users",uid,"invoices"),snap=>{
+      const a=snap.docs.map(d=>d.data()).sort((x,y)=>(y.upd||0)-(x.upd||0));
+      if(first){first=false;migrate(a)}
+      window.setHist(a);
+    },err=>alert("Gagal membaca data: "+err.message));
+  });
+}
+</script>
+</body>
+</html>
