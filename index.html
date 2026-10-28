@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Arvix ( Faktur )</title>
+<title>Pembuat Faktur</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -217,6 +217,7 @@ th{padding:7px 10px}
       <div class="meta"><span>Tanggal</span><input type="date" id="tgl"></div>
       <div class="meta hide" id="rSyarat"><span id="lSyarat">Ref. invoice</span><input id="syarat"></div>
       <div class="meta"><span id="lTempo">Jatuh tempo</span><input type="date" id="tempo"></div>
+      <div class="meta hide"><span>Nomor PO</span><input id="po" class="r" value="DI0001"></div>
       <div class="meta noprint"><span>No. WhatsApp</span><input id="wa" class="r" value="0898 1179 514" inputmode="tel"></div>
     </div>
   </div>
@@ -332,7 +333,8 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function saveRec(){
     var k=$('klien');
-    if(!k.value.trim()){k.dataset.touched='1';k.classList.add('bad');k.focus();return}
+    if(!k.value.trim()){k.dataset.touched='1';k.classList.add('bad');k.focus();alert('Isi kolom "Tagihan kepada" dulu sebelum menyimpan.');return}
+    if(!window.DB){alert('Koneksi Firebase belum siap. Muat ulang halaman (Ctrl+F5) lalu coba lagi.');return}
     calc();var s=state();delete s.logo;
     var paid=(+s.bayar||0)+(mode==='lun'?(+s.lunas||0):0),sisa=lastTot-paid;
     var st=lastTot>0&&sisa<=0?'Lunas':paid>0?'DP dibayar':'Belum bayar';
@@ -341,9 +343,11 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     if(i>=0)a[i]=r;else a.unshift(r);
     var vd=null;
     if(mode==='lun'&&st==='Lunas'){vd={kode:vcode(),nomor:s.store.inv.nomor||'',nomorLunas:s.store.lun.nomor||'',klien:r.klien,total:lastTot,tgl:$('tempo').value,status:'LUNAS',usaha:$('pengirim').value.split('\n')[0]}}
-    curId=r.id;DB.put(r).catch(function(e){alert('Gagal menyimpan: '+e.message)});
+    curId=r.id;var pr=DB.put(r);
     if(vd)DB.verif(vd.kode,vd).catch(function(e){alert('Kode verifikasi gagal disimpan: '+e.message)});
-    var b=$('save');b.textContent='Tersimpan ✓';setTimeout(function(){b.textContent='Simpan'},1500);
+    var b=$('save'),fin=false;b.textContent='Menyimpan...';
+    var tm=setTimeout(function(){if(!fin){b.textContent='Simpan';alert('Tidak ada respons dari Firebase setelah 12 detik. Kemungkinan: koneksi internet, ad-blocker/VPN yang memblokir firestore.googleapis.com, atau database Firestore belum dibuat.')}},12000);
+    pr.then(function(){fin=true;clearTimeout(tm);b.textContent='Tersimpan ✓';setTimeout(function(){b.textContent='Simpan'},1800)}).catch(function(e){fin=true;clearTimeout(tm);b.textContent='Simpan';alert('Gagal menyimpan: '+e.message)});
   }
   function applyState(s){
     fields.forEach(function(f){if(s[f]!=null)$(f).value=s[f]});
@@ -495,7 +499,7 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,collection,doc,setDoc,getDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,initializeFirestore,collection,doc,setDoc,getDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 /* Konfigurasi Firebase: proyek Faktur - Arvix Production */
 const firebaseConfig={
@@ -540,7 +544,7 @@ if(firebaseConfig.apiKey.startsWith("ISI")){
   $("lErr").textContent="Firebase belum dikonfigurasi. Isi firebaseConfig di index.html (lihat PANDUAN.md).";
   $("lBtn").disabled=true;
 }else{
-  const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);if(VQ)verify(VQ);
+  const app=initializeApp(firebaseConfig);auth=getAuth(app);db=initializeFirestore(app,{experimentalAutoDetectLongPolling:true});if(VQ)verify(VQ);
   const doLogin=()=>{
     $("lErr").textContent="";
     signInWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lPass").value)
