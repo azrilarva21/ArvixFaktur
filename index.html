@@ -172,6 +172,26 @@ th{padding:7px 10px}
 #stamp{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%) rotate(-20deg);margin:0;width:auto;padding:6px 34px;font-size:84px;letter-spacing:.08em;border:7px double rgba(184,137,58,.32);color:rgba(138,100,32,.26);border-radius:18px;pointer-events:none;z-index:2;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #stamp img{width:76px;height:76px;opacity:.4}
 @media (max-width:760px){#stamp{font-size:44px;padding:4px 18px;border-width:4px}#stamp img{width:40px;height:40px}}
+/* ringkas v3 */
+.logo img{height:44px}
+.logo:not(.has){width:80px;height:44px}
+.title input.big{font-size:20px;padding:2px 0}
+.title input.big:hover,.title input.big:focus{padding:2px 8px}
+.num{width:90px;margin-top:2px}
+textarea{min-height:30px;overflow:hidden;resize:none}
+label.l{margin-bottom:2px}
+.stack>div{margin-bottom:6px}
+.stack>.meta{margin-bottom:4px}
+.row2{margin-top:10px!important}
+.tbl{margin-top:8px}
+.bottom{margin-top:8px!important}
+.qb{gap:12px}
+.qb .qr,.segel .qb .qr{width:100px;height:100px}
+@page{size:A4 portrait;margin:0}
+@media print{
+.sheet{padding:9mm 12mm!important}
+.pair>div:has(#kirim:placeholder-shown){display:none}
+}
 </style>
 </head>
 <body>
@@ -191,6 +211,7 @@ th{padding:7px 10px}
     <button class='btn' id='save'>Simpan</button>
     <button class="btn" id="reset">Faktur baru</button>
     <button class="btn pri" id="print">Cetak / simpan PDF</button>
+    <button class="btn" id="tes">Tes Firebase</button>
     <button class="btn" id="logout">Keluar</button>
   </div>
 </div>
@@ -207,7 +228,7 @@ th{padding:7px 10px}
 
   <div class="row2">
     <div class="stack">
-      <div><textarea id="pengirim" style="min-height:40px">ARVIX Production</textarea></div>
+      <div><textarea id="pengirim" style="min-height:30px">ARVIX Production</textarea></div>
       <div class="pair">
         <div><label class="l" for="klien">Tagihan kepada</label><textarea id="klien" placeholder="Kepada siapa ini?"></textarea><div class="hint">Masukkan detail klien Anda di kolom "Tagihan kepada".</div></div>
         <div><label class="l" for="kirim">Dikirim ke</label><textarea id="kirim" placeholder="(opsional)"></textarea></div>
@@ -232,12 +253,12 @@ th{padding:7px 10px}
 
   <div class="bottom">
     <div class="stack">
-      <div><label class="l" for="catatan">Catatan</label><textarea id="catatan" style="min-height:96px">Transfer :
+      <div><label class="l" for="catatan">Catatan</label><textarea id="catatan" style="min-height:30px">Transfer :
 BCA   054 154 2816 a.n Wildan Azril Arvany
 
 - Fiksasi Booking dilakukan dengan pembayaran Uang Muka ( Down Payment ) sebesar Rp. 250.000
 - Mohon konfirmasi pembayaran melalui Whatsapp ( 0898 1179 514 )</textarea></div>
-      <div><label class="l" for="ketentuan">Ketentuan</label><textarea id="ketentuan" style="min-height:80px">1. Pelunasan dibayarkan selambat-lambatnya H-3 acara.
+      <div><label class="l" for="ketentuan">Ketentuan</label><textarea id="ketentuan" style="min-height:30px">1. Pelunasan dibayarkan selambat-lambatnya H-3 acara.
 2. Denda keterlambatan pelunasan 10% dari sisa tagihan.
 3. DP tidak dapat dikembalikan.
 4. Klien/Vendor memastikan venue mengizinkan penggunaan efek.</textarea></div>
@@ -298,10 +319,10 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
   window.ARVIX_LOGO=LOGO;$('stampLogo').src=MARK;
   function qrSvg(text){
     try{
-      var q=qrcode(0,'H');q.addData(text);q.make();
-      var n=q.getModuleCount(),m=2,s=n+2*m,d='',r,c;
+      var q=qrcode(0,'Q');q.addData(text);q.make();
+      var n=q.getModuleCount(),m=4,s=n+2*m,d='',r,c;
       for(r=0;r<n;r++)for(c=0;c<n;c++)if(q.isDark(r,c))d+='M'+(c+m)+' '+(r+m)+'h1v1h-1z';
-      var w=s*0.24,x=(s-w)/2;
+      var w=s*0.2,x=(s-w)/2;
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+s+' '+s+'" shape-rendering="crispEdges"><rect width="'+s+'" height="'+s+'" fill="#fff"/><path d="'+d+'" fill="#0f172a"/><rect x="'+(x-1)+'" y="'+(x-1)+'" width="'+(w+2)+'" height="'+(w+2)+'" rx="2" fill="#fff"/><image href="'+MARK+'" x="'+x+'" y="'+x+'" width="'+w+'" height="'+w+'"/></svg>';
     }catch(e){return ''}
   }
@@ -310,6 +331,8 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     if(!l.vcode)l.vcode='ARVIX-'+Math.random().toString(36).slice(2,8).toUpperCase()+Date.now().toString(36).slice(-3).toUpperCase();
     return l.vcode;
   }
+  function fit(){document.querySelectorAll('textarea').forEach(function(t){if(!t.scrollHeight)return;t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'})}
+  window.addEventListener('beforeprint',fit);
   function place(L){
     var sg=$('segel'),st=$('stamp'),vb=$('verBox'),wb=$('waBox'),qrs=document.querySelector('.qrs');
     if(L){sg.appendChild(vb);sg.appendChild(wb);sg.classList.remove('hide')}
@@ -321,7 +344,7 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     var msg=mode==='lun'?'Halo ARVIX Production, saya ingin bertanya tentang Bukti Pelunasan Invoice #'+invNo+an+'.':'Halo ARVIX Production, saya ingin konfirmasi pembayaran Invoice #'+invNo+an+'. Sisa tagihan: '+fmt(sisa)+'.';
     var url='https://wa.me/'+num+'?text='+encodeURIComponent(msg);
     $('waBox').classList.toggle('hide',!num);
-    if(num){$('waQr').innerHTML=qrSvg(url);$('waLink').href=url;$('waLink').textContent=$('wa').value}
+    if(num){$('waQr').innerHTML=qrSvg('https://wa.me/'+num+'?text='+encodeURIComponent((mode==='lun'?'Pelunasan #':'Konfirmasi Invoice #')+invNo+(kl?' - '+kl.slice(0,20):'')));$('waLink').href=url;$('waLink').textContent=$('wa').value}
     $('verBox').classList.toggle('hide',!ok);
     if(ok){var code=vcode();$('verQr').innerHTML=qrSvg(location.origin+location.pathname+'?v='+code);$('verCode').textContent=code}
   }
@@ -373,7 +396,7 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     ['reset','print','save'].forEach(function(i){$(i).classList.toggle('hide',h)});
     $('tHist').classList.toggle('on',h);
     $('tInv').classList.toggle('on',!h&&mode==='inv');$('tLunas').classList.toggle('on',!h&&mode==='lun');
-    if(h)render();
+    if(h)render();else fit();
   }
   function setMode(m,skip){
     if(!skip)snap();
@@ -412,7 +435,7 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     var s=$("rKirim").classList.contains("hide")?0:(+$("ongkir").value||0);
     var tot=base+p+s;lastTot=tot;
     $("sub").textContent=fmt(sub);$("total").textContent=fmt(tot);var ln=mode==="lun"?(+$("lunas").value||0):0,sisa=tot-(+$("bayar").value||0)-ln;
-    $("sisa").textContent=fmt(sisa);var okL=mode==="lun"&&tot>0&&sisa<=0;$("stamp").classList.toggle("hide",!okL);updateFoot(okL,sisa);
+    $("sisa").textContent=fmt(sisa);var okL=mode==="lun"&&tot>0&&sisa<=0;$("stamp").classList.toggle("hide",!okL);updateFoot(okL,sisa);fit();
   }
 
   function state(){
@@ -493,7 +516,7 @@ BCA   054 154 2816 a.n Wildan Azril Arvany
     if(b.dataset.act==="open"){var r=a.filter(function(x){return x.id===id})[0];if(r){applyState(r.s);curId=id;view("edit")}}
     else if(b.dataset.act==="del"&&confirm("Hapus dokumen ini dari riwayat?")){DB.del(id).catch(function(e){alert('Gagal menghapus: '+e.message)});HC=a.filter(function(x){return x.id!==id});if(curId===id)curId=null;render()}
   };
-  load();syncAdds();setMode(mode,true);calc();
+  load();syncAdds();setMode(mode,true);calc();if(document.fonts)document.fonts.ready.then(fit);
 })();
 </script>
 <script type="module">
@@ -553,6 +576,13 @@ if(firebaseConfig.apiKey.startsWith("ISI")){
   $("lBtn").onclick=doLogin;
   $("lPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
   $("logout").onclick=async()=>{await signOut(auth);try{localStorage.removeItem("faktur-draft-v1")}catch(e){}location.reload()};
+  $("tes").onclick=async()=>{
+    try{
+      if(!uid)throw new Error("Belum login");
+      await Promise.race([setDoc(doc(db,"users",uid,"tes","ping"),{t:Date.now()}),new Promise((_,rj)=>setTimeout(()=>rj(new Error("TIMEOUT: tidak ada respons dari server Firestore dalam 10 detik")),10000))]);
+      alert("BERHASIL. Firebase menerima data.\nProyek: "+firebaseConfig.projectId+"\nUID: "+uid);
+    }catch(e){alert("GAGAL: "+(e.code||"")+" "+e.message+"\nProyek: "+firebaseConfig.projectId)}
+  };
   if(!VQ)onAuthStateChanged(auth,u=>{
     if(unsub){unsub();unsub=null}
     if(!u){uid=null;$("login").classList.remove("hide");window.setHist([]);return}
